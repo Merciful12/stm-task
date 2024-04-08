@@ -7,17 +7,20 @@
 
 ## Фетчеры
 - `fetchPlacemarks`: фетчит и сохраняет результат в placemarks
-**Параметры**: `mapBounds`, `searchQuery`, `useSavedFilter: boolean`
   
-<br>
+  **Параметры**: `mapBounds`, `searchQuery`, `useSavedFilter: boolean`
+  
 
 - `fetchSnippets`
-**Параметры**: `mapBounds`, `cluster?: {}`, `useSavedFilter?: boolean`
+
+
+  **Параметры**: `mapBounds`, `cluster?: {}`, `useSavedFilter?: boolean`
   
-<br>
 
 - `loadData`: вызывает `fetchPlacemarks` и `fetchSnippets`, дожидается результата обоих и отправляет результат в аналитику.
-       **Парметры**: `useSavedFilter`
+
+
+  **Парметры**: `useSavedFilter`
 
 ## Связи:
 - При изменении mapBounds вызывается `loadData` с `useSavedFilter = true` и  актуальными значениями `mapBounds`, `searchQuery`
