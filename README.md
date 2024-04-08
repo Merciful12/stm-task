@@ -8,10 +8,14 @@
 ## Фетчеры
 - `fetchPlacemarks`: фетчит и сохраняет результат в placemarks
 **Параметры**: `mapBounds`, `searchQuery`, `useSavedFilter: boolean`
+  
 <br>
+
 - `fetchSnippets`
 **Параметры**: `mapBounds`, `cluster?: {}`, `useSavedFilter?: boolean`
+  
 <br>
+
 - `loadData`: вызывает `fetchPlacemarks` и `fetchSnippets`, дожидается результата обоих и отправляет результат в аналитику.
        **Парметры**: `useSavedFilter`
 
