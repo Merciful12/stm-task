@@ -1,0 +1,24 @@
+{
+  "name": "vanilla-typescript",
+  "version": "1.0.0",
+  "description": "JavaScript and TypeScript example starter project",
+  "main": "index.html",
+  "scripts": {
+    "start": "ts-node "
+  },
+  "dependencies": {
+    "@reatom/framework": "3.4.35",
+    "@reatom/testing": "3.4.4",
+    "@types/node": "20.12.5",
+    "effector": "23.2.0",
+    "uvu": "0.5.6"
+  },
+  "devDependencies": {
+    "@swc-node/register": "^1.9.0",
+    "typescript": "5.4.4"
+  },
+  "keywords": [
+    "typescript",
+    "javascript"
+  ]
+}
