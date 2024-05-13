@@ -1,99 +1,138 @@
 import { suite } from "uvu";
 import * as assert from "uvu/assert";
-import { mockFn } from './test-utils'
-import { fork, allSettled } from 'effector';
-import { placemarks, mapBounds, onClusterClick, searchQuery, fetchMapPlacemarksFx, fetchSnippetsFx, loadData } from './effector'
+import { mockFn } from "./test-utils";
+import { fork, allSettled } from "effector";
+import {
+  placemarks,
+  mapBounds,
+  onClusterClick,
+  searchQuery,
+  fetchMapPlacemarksFx,
+  fetchSnippetsFx,
+  loadData,
+} from "./effector";
 
-const effectorSuite = suite<{ server: ReturnType<typeof mockFn>, placemarksMock: Array<number> }>(
-  "effectorSuite",
-);
+const effectorSuite = suite<{
+  server: ReturnType<typeof mockFn>;
+  placemarksMock: Array<number>;
+}>("effectorSuite");
 
-effectorSuite.before(context => {
-  const placemarksMock = [1, 2, 3, 4, 5]
-  context.placemarksMock = placemarksMock
-  context.server = mockFn(() => Promise.resolve(placemarksMock))
-})
+effectorSuite.before((context) => {
+  const placemarksMock = [1, 2, 3, 4, 5];
+  context.placemarksMock = placemarksMock;
+  context.server = mockFn(() => Promise.resolve(placemarksMock));
+});
 
 effectorSuite.after.each(({ server }) => {
   server.clear();
-})
+});
 
-effectorSuite('mapBounds changed', async ({ server }) => {
+effectorSuite("mapBounds changed", async ({ server }) => {
   const searchQueryMock = "123";
 
-  const fetchMapPlacemarksMock = mockFn((sources, useFilter) => server({
-    ...sources,
-    useFilter,
-    url: 'placemarks'
-  }));
-  const fetchSnippetsMock = mockFn((source, params) => server({
-    ...source,
-    useFilter: params.useSavedFilter,
-    url: 'snippets'
-  }));
+  const fetchMapPlacemarksMock = mockFn((sources, useFilter) =>
+    server({
+      ...sources,
+      useFilter,
+      url: "placemarks",
+    })
+  );
+  const fetchSnippetsMock = mockFn((source, params) =>
+    server({
+      ...source,
+      useFilter: params.useSavedFilter,
+      url: "snippets",
+    })
+  );
   const scope = fork({
-    values: [
-      [searchQuery, searchQueryMock]
-    ],
+    values: [[searchQuery, searchQueryMock]],
     handlers: [
       [fetchMapPlacemarksFx, fetchMapPlacemarksMock],
-      [fetchSnippetsFx, fetchSnippetsMock]
-    ]
+      [fetchSnippetsFx, fetchSnippetsMock],
+    ],
   });
   const mapBoundsMock = { lat: 2, lon: 3 };
 
-  await allSettled(mapBounds, { scope, params: mapBoundsMock })
+  await allSettled(mapBounds, { scope, params: mapBoundsMock });
 
   assert.equal(server.inputs()[0], {
     searchQuery: "123",
     mapBounds: mapBoundsMock,
     useFilter: true,
-    url: 'placemarks'
-  })
+    url: "placemarks",
+  });
   assert.equal(server.inputs()[1], {
     ...mapBoundsMock,
-    url: 'snippets',
-    useFilter: true
-  })
-})
+    url: "snippets",
+    useFilter: true,
+  });
+});
 
 effectorSuite("searchQuery changed", async ({ server, placemarksMock }) => {
   const mapBoundsMock = { lat: 1, lon: 2 };
-  const fetchMapPlacemarksMock = mockFn((sources, useFilter) => server({
-    ...sources,
-    useFilter,
-    url: 'placemarks'
-  }));
-  const fetchSnippetsMock = mockFn((source, params) => server({
-    ...source,
-    useFilter: params.useSavedFilter,
-    url: 'snippets'
-  }));
+  const fetchMapPlacemarksMock = mockFn((sources, useFilter) =>
+    server({
+      ...sources,
+      useFilter,
+      url: "placemarks",
+    })
+  );
+  const fetchSnippetsMock = mockFn((source, params) =>
+    server({
+      ...source,
+      useFilter: params.useSavedFilter,
+      url: "snippets",
+    })
+  );
   const scope = fork({
-    values: [
-      [mapBounds, mapBoundsMock]
-    ],
+    values: [[mapBounds, mapBoundsMock]],
     handlers: [
       [fetchMapPlacemarksFx, fetchMapPlacemarksMock],
-      [fetchSnippetsFx, fetchSnippetsMock]
-    ]
+      [fetchSnippetsFx, fetchSnippetsMock],
+    ],
   });
-  assert.equal(scope.getState(placemarks), [])
-  await allSettled(searchQuery, { scope, params: "123" })
+  assert.equal(scope.getState(placemarks), []);
+  await allSettled(searchQuery, { scope, params: "123" });
 
   assert.equal(server.inputs()[0], {
     searchQuery: "123",
     mapBounds: mapBoundsMock,
     useFilter: false,
-    url: 'placemarks'
-  })
+    url: "placemarks",
+  });
   assert.equal(server.inputs()[1], {
     ...mapBoundsMock,
-    url: 'snippets',
-    useFilter: false
-  })
+    url: "snippets",
+    useFilter: false,
+  });
 
-  assert.equal(scope.getState(placemarks), placemarksMock)
+  assert.equal(scope.getState(placemarks), placemarksMock);
+});
+
+effectorSuite("onClusterClick call fetchSnippets", async ({ server }) => {
+  const mapBoundsMock = { lat: 1, lon: 2 };
+  const cluster = { coords: "1,2" };
+  const fetchSnippetsMock = mockFn((source, params) =>
+    server({
+      ...source,
+      useFilter: params.useSavedFilter,
+      cluster: params.cluster,
+      url: "snippets",
+    })
+  );
+  const scope = fork({
+    values: [[mapBounds, mapBoundsMock]],
+    handlers: [[fetchSnippetsFx, fetchSnippetsMock]],
+  });
+
+  await allSettled(onClusterClick, { scope, params: cluster });
+
+  assert.equal(server.inputs()[0], {
+    ...mapBoundsMock,
+    useFilter: undefined,
+    cluster,
+    url: "snippets",
+  });
 });
 
 effectorSuite.run();
